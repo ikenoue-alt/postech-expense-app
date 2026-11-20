@@ -17,7 +17,7 @@ const EXPENSE = {
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('経費申請')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover');
 }
 
 function setupExpenseApp() {

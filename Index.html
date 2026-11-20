@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <title>経費申請</title>
 <style>
@@ -17,8 +17,17 @@ input:not([type=file]),select{color:#17283e;background:#fff;border:1px solid #ad
 .btn{min-height:42px;border:1px solid #9ab4cb;color:var(--blue);background:#fff;border-radius:8px;padding:7px 11px;font-weight:700;font-size:.88rem}.btn:hover:not(:disabled){background:#eff6ff}.flat{border-color:transparent;background:transparent;color:#874052}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.add{margin-top:13px;width:100%;border-style:dashed;min-height:47px}
 .route-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.route-link{display:inline-flex;align-items:center;text-decoration:none;line-height:1.25}.route-link:focus-visible{outline:3px solid #238aab;outline-offset:3px}.photos{background:#f7f9fc;border:1px dashed #a8bdd0;padding:11px;border-radius:9px}.images{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,104px),1fr));gap:7px;margin-top:8px}.images:empty{margin-top:0}.thumb{min-width:0;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;padding:4px}.thumb img{width:100%;height:86px;object-fit:contain;background:#e8eff5;display:block}.thumb button{width:100%;min-height:37px;margin-top:4px;font-size:.78rem;padding:3px}.thumb figcaption{font-size:.75rem;color:var(--muted);text-align:center;margin-top:3px;overflow-wrap:anywhere}.thumb details{font-size:.76rem}.thumb pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
 .summary{position:sticky;top:14px}.summary h2{font-size:1.09rem;margin-bottom:12px}.summary .count,.summary .total{display:flex;justify-content:space-between;gap:9px;align-items:center;color:#304c62;font-size:.91rem}.summary .total{border-top:1px solid var(--line);padding-top:13px;margin-top:11px}.summary strong{font-size:1.54rem;color:var(--alpine);overflow-wrap:anywhere}.primary{width:100%;background:var(--blue);color:#fff;border-color:var(--blue);min-height:48px;margin-top:15px}.primary:hover:not(:disabled){background:#0d3963}.notice{margin-bottom:12px;padding:10px 13px;border-radius:8px;background:#e5eef8;color:var(--ink);font-size:.9rem}.summary .help{margin-top:8px}.success{max-width:600px}.success h2{margin-bottom:9px}.success p{overflow-wrap:anywhere}.success .btn{margin-top:14px}
-@media(max-width:760px){.layout{grid-template-columns:1fr;gap:14px}.summary{position:static}.summary strong{font-size:1.35rem}}
-@media(max-width:500px){main{padding:16px 12px 30px}.top>div{padding:12px}.card{padding:13px}.detail{padding:0}.detail-body{padding:12px}.grid3{grid-template-columns:1fr}.person{grid-template-columns:1fr;gap:10px}.grid2>div{min-width:0}}
+@media(max-width:760px){.layout{grid-template-columns:minmax(0,1fr);gap:14px}.layout>div,.items,.detail,.detail-body,.train{min-width:0}.summary{position:static}.summary strong{font-size:1.35rem}}
+@media(max-width:500px){
+  main{padding:16px 12px max(30px,env(safe-area-inset-bottom))}
+  .top>div{padding:12px}.card{padding:13px}.detail{padding:0}.detail-body{padding:12px}
+  .grid2,.grid3,.person{grid-template-columns:minmax(0,1fr);gap:10px}
+  .grid2>div{min-width:0}
+  .btn{min-height:44px}.primary{min-height:50px}
+  input:not([type=file]),select{font-size:16px}
+}
+@media(max-width:360px){.actions .btn,.route-link{flex:1 1 auto;justify-content:center}}
+
 </style>
 </head>
 <body>
