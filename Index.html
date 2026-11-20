@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>経費申請</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;color:#17283e;background:#f2f6fa;font-synthesis:none;--ink:#142f4a;--muted:#4e6578;--line:#d5e2ec;--blue:#164d80;--alpine:#096b60;--wash:#edf7f5}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0}h1,h2,h3,p,figure{margin:0}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.58;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #238aab;outline-offset:3px}
+.top{background:var(--ink);color:#fff}.top>div{max-width:1140px;margin:auto;padding:16px 24px;display:flex;gap:11px;align-items:center;font-weight:700;letter-spacing:.04em}.logo{width:28px;height:28px;display:grid;place-items:center;border:1px solid #8dc9cc;color:#d5f6f3;border-radius:7px;font-size:1rem}
+main{max-width:1140px;margin:auto;padding:27px 24px 55px}.headline{margin-bottom:20px}.headline h1{font-size:clamp(1.65rem,5vw,2.42rem);letter-spacing:.035em}.headline p{margin-top:6px;color:var(--muted);font-size:.95rem}.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:20px;align-items:start}
+.card{background:white;border:1px solid var(--line);border-radius:15px;padding:19px;box-shadow:0 4px 12px #17355209}.person{display:grid;grid-template-columns:minmax(120px,.6fr) minmax(0,1fr);gap:14px;margin-bottom:17px}.date-box{background:#f2f7fc;color:var(--blue);border:1px solid var(--line);padding:11px 12px;min-height:44px;border-radius:8px;font-weight:700}
+label,.legend{display:block;font-weight:700;font-size:.91rem;line-height:1.35;margin:0 0 6px}.require{margin-left:5px;color:#963440;font-size:.75rem;white-space:nowrap}
+input:not([type=file]),select{color:#17283e;background:#fff;border:1px solid #adbfce;border-radius:8px;min-height:44px;padding:9px 10px;width:100%;min-width:0}input::placeholder{color:#60768b}select{padding-right:25px}
+.items{display:grid;gap:13px}.detail{padding:0;overflow:hidden}.detail-head{background:#f5f9fc;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:6px;padding:10px 16px}.detail-head h3{font-size:1rem}.detail-body{padding:16px;display:grid;gap:13px}.grid2,.grid3{display:grid;gap:10px}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}.train{border:1px solid #c8e2de;background:#f4faf9;border-radius:10px;padding:13px;display:grid;gap:11px}.help,.status{font-size:.86rem;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}.error{color:#a12539}.estimate{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#ddf1ed;padding:8px 11px;border-radius:7px;color:#0a554c;font-weight:700;font-size:.94rem}
+.btn{min-height:42px;border:1px solid #9ab4cb;color:var(--blue);background:#fff;border-radius:8px;padding:7px 11px;font-weight:700;font-size:.88rem}.btn:hover:not(:disabled){background:#eff6ff}.flat{border-color:transparent;background:transparent;color:#874052}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.add{margin-top:13px;width:100%;border-style:dashed;min-height:47px}
+.route-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.route-link{display:inline-flex;align-items:center;text-decoration:none;line-height:1.25}.route-link:focus-visible{outline:3px solid #238aab;outline-offset:3px}.photos{background:#f7f9fc;border:1px dashed #a8bdd0;padding:11px;border-radius:9px}.images{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,104px),1fr));gap:7px;margin-top:8px}.images:empty{margin-top:0}.thumb{min-width:0;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;padding:4px}.thumb img{width:100%;height:86px;object-fit:contain;background:#e8eff5;display:block}.thumb button{width:100%;min-height:37px;margin-top:4px;font-size:.78rem;padding:3px}.thumb figcaption{font-size:.75rem;color:var(--muted);text-align:center;margin-top:3px;overflow-wrap:anywhere}.thumb details{font-size:.76rem}.thumb pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
+.summary{position:sticky;top:14px}.summary h2{font-size:1.09rem;margin-bottom:12px}.summary .count,.summary .total{display:flex;justify-content:space-between;gap:9px;align-items:center;color:#304c62;font-size:.91rem}.summary .total{border-top:1px solid var(--line);padding-top:13px;margin-top:11px}.summary strong{font-size:1.54rem;color:var(--alpine);overflow-wrap:anywhere}.primary{width:100%;background:var(--blue);color:#fff;border-color:var(--blue);min-height:48px;margin-top:15px}.primary:hover:not(:disabled){background:#0d3963}.notice{margin-bottom:12px;padding:10px 13px;border-radius:8px;background:#e5eef8;color:var(--ink);font-size:.9rem}.summary .help{margin-top:8px}.success{max-width:600px}.success h2{margin-bottom:9px}.success p{overflow-wrap:anywhere}.success .btn{margin-top:14px}
+@media(max-width:760px){.layout{grid-template-columns:1fr;gap:14px}.summary{position:static}.summary strong{font-size:1.35rem}}
+@media(max-width:500px){main{padding:16px 12px 30px}.top>div{padding:12px}.card{padding:13px}.detail{padding:0}.detail-body{padding:12px}.grid3{grid-template-columns:1fr}.person{grid-template-columns:1fr;gap:10px}.grid2>div{min-width:0}}
+</style>
+</head>
+<body>
+<header class="top"><div><span class="logo" aria-hidden="true">¥</span>ポスティングホールディングス</div></header>
+<main>
+  <div class="headline"><h1>経費申請</h1><p>明細と証憑をまとめて提出できます。</p></div>
+  <p class="notice" id="notice" role="status" hidden></p>
+  <form id="form" class="layout">
+    <div>
+      <section class="card person" aria-label="申請者情報">
+        <div><span class="legend">申請日（日本時間）</span><div class="date-box" id="today"></div></div>
+        <div><label for="name">氏名<span class="require">必須</span></label><input id="name" name="applicant" autocomplete="name" maxlength="80" placeholder="例　山田 太郎" required></div>
+      </section>
+      <div class="items" id="items"></div>
+      <button type="button" id="add" class="btn add">＋ 明細を追加</button>
+    </div>
+    <aside class="card summary">
+      <h2>申請内容</h2>
+      <p class="count"><span>明細</span><span id="count"></span></p>
+      <p class="count"><span>添付写真</span><span id="photo-count"></span></p>
+      <p class="total"><span>申請額合計</span><strong id="total"></strong></p>
+      <button id="submit" class="btn primary" type="submit">提出する</button>
+      <p id="message" class="help" role="status" hidden></p>
+    </aside>
+  </form>
+  <section class="card success" id="success" hidden>
+    <h2 id="result" tabindex="-1"></h2><p id="receipt"></p>
+    <button type="button" id="again" class="btn">次の申請を入力</button>
+  </section>
+</main>
+<template id="detail-template">
+  <section class="card detail">
+    <div class="detail-head"><h3></h3><button class="btn flat" type="button" data-action="remove">明細を削除</button></div>
+    <div class="detail-body">
+      <div class="grid2">
+        <div><label data-for="date">利用日<span class="require">必須</span></label><input data-field="date" type="date" required></div>
+        <div><label data-for="category">区分</label><select data-field="category"><option value="general">一般経費</option><option value="train">キャラバン交通費</option><option value="bike">自転車引き出し代</option></select></div>
+      </div>
+      <div data-area="ordinary"><label data-for="amount">金額（円）<span class="require">必須</span></label><input data-field="amount" inputmode="numeric" maxlength="7" pattern="[0-9]{1,7}" placeholder="例　300" required></div>
+      <section class="train" aria-label="キャラバンの運賃精算" data-area="train" hidden>
+        <div class="grid3">
+          <div><label data-for="home">自宅最寄駅</label><input data-field="home" maxlength="55" placeholder="例　赤羽"></div>
+          <div><label data-for="office">最寄り事務所の駅</label><input data-field="office" maxlength="55" placeholder="例　板橋"></div>
+          <div><label data-for="destination">集合駐輪場の最寄駅</label><input data-field="destination" maxlength="55" placeholder="例　森下"></div>
+        </div>
+        <div class="grid2">
+          <div><label data-for="method">運賃種別</label><select data-field="method"><option value="IC">IC</option><option value="切符">切符</option></select></div>
+          <div><label data-for="direction">入力する運賃の範囲</label><select data-field="direction"><option value="片道">片道の運賃</option><option value="往復">往復分の運賃</option></select></div>
+        </div>
+        <div>
+          <button class="btn" data-action="lookup" type="button">登録運賃を再検索</button>
+          <p class="status" data-area="lookup-status" role="status" hidden></p>
+        </div>
+        <p class="help" data-area="route-help">駅を入力すると、登録済みの経路から最安運賃が入ります。</p>
+        <div class="grid2">
+          <div>
+            <label data-for="destinationAmount">集合駅までの運賃（円）</label>
+            <select data-field="destinationChoice" aria-label="集合駅までの運賃候補" hidden></select>
+            <input data-field="destinationAmount" inputmode="numeric" maxlength="7" pattern="[0-9]{1,7}">
+            <div class="route-links">
+              <a class="btn route-link" data-route="destination-out" target="_blank" rel="noopener noreferrer" hidden>集合駅への経路</a>
+              <a class="btn route-link" data-route="destination-back" target="_blank" rel="noopener noreferrer" hidden>集合駅からの帰り</a>
+            </div>
+          </div>
+          <div>
+            <label data-for="officeAmount">事務所までの運賃（円）</label>
+            <select data-field="officeChoice" aria-label="事務所までの運賃候補" hidden></select>
+            <input data-field="officeAmount" inputmode="numeric" maxlength="7" pattern="[0-9]{1,7}">
+            <div class="route-links">
+              <a class="btn route-link" data-route="office-out" target="_blank" rel="noopener noreferrer" hidden>事務所駅への経路</a>
+              <a class="btn route-link" data-route="office-back" target="_blank" rel="noopener noreferrer" hidden>事務所駅からの帰り</a>
+            </div>
+          </div>
+        </div>
+        <div class="estimate"><span>申請額の差額</span><output data-area="difference">入力待ち</output></div>
+      </section>
+      <div class="photos" role="group">
+        <p class="legend">領収書・利用履歴の写真<span class="require">必須</span></p>
+        <p class="help">明細ごとに1〜5枚。支払額が確認できるものを添付してください。</p>
+        <input type="file" data-field="camera" accept="image/*" capture="environment" hidden>
+        <input type="file" data-field="picker" accept="image/*" multiple hidden>
+        <div class="actions"><button class="btn" type="button" data-action="camera">写真を撮る</button><button class="btn" type="button" data-action="picker">画像を選ぶ</button></div>
+        <p class="status" data-area="photo-status" role="status"></p>
+        <div class="images" data-area="images"></div>
+      </div>
+    </div>
+  </section>
+</template>
+<script>
+'use strict';
+const el = id => document.getElementById(id);
+const live = Boolean(window.google?.script?.run);
+const items = [];
+const currency = new Intl.NumberFormat('ja-JP');
+let ready = !live, busy = false, id = '', nextId = 0;
+let today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date());
+
+function rpc(method, ...args) {
+  return new Promise((resolve, reject) => {
+    const service = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+    service[method](...args);
+  });
+}
+
+function say(target, text, error = false) {
+  target.textContent = text;
+  target.hidden = !text;
+  target.classList.toggle('error', error);
+}
+
+function dateLabel() { el('today').textContent = today.replaceAll('-', '/'); }
+function yen(text) { return /^\d{1,7}$/.test(text) ? Number(text) : null; }
+function amount(item) {
+  if (item.field('category').value !== 'train') return yen(item.field('amount').value);
+  const destination = yen(item.field('destinationAmount').value);
+  const office = yen(item.field('officeAmount').value);
+  return destination === null || office === null ? null : Math.max(0, destination - office);
+}
+function photoCount() { return items.reduce((sum, item) => sum + item.photos.length, 0); }
+function refresh() {
+  let total = 0, count = 0;
+  items.forEach((item, index) => {
+    item.card.querySelector('h3').textContent = '明細 ' + (index + 1);
+    item.action('remove').hidden = items.length === 1;
+    updateRouteLinks(item);
+    const value = amount(item);
+    item.area('difference').textContent = value === null ? '入力待ち' : currency.format(value) + ' 円';
+    if (value !== null) { total += value; count++; }
+  });
+  el('count').textContent = items.length + ' 件';
+  el('photo-count').textContent = photoCount() + ' / 12 枚';
+  el('total').textContent = count ? currency.format(total) + ' 円' : '—';
+  el('add').disabled = busy || items.length >= 8;
+  el('submit').disabled = !ready || busy || items.some(item => item.processing || item.looking || item.lookupTimer);
+}
+
+function changed() {
+  id = '';
+  say(el('message'), '');
+  refresh();
+}
+
+function configureCategory(item) {
+  const train = item.field('category').value === 'train';
+  item.area('train').hidden = !train;
+  item.area('ordinary').hidden = train;
+  item.field('amount').disabled = train;
+  ['home', 'office', 'destination', 'method', 'direction', 'destinationAmount', 'officeAmount'].forEach(key => {
+    item.field(key).disabled = !train;
+    item.field(key).required = train;
+  });
+}
+
+function addItem() {
+  const fragment = el('detail-template').content.cloneNode(true);
+  const card = fragment.firstElementChild;
+  const field = key => card.querySelector('[data-field="' + key + '"]');
+  const area = key => card.querySelector('[data-area="' + key + '"]');
+  const action = key => card.querySelector('[data-action="' + key + '"]');
+  const item = { card, field, area, action, photos: [], processing: false, looking: false, lookup: 0, lookupTimer: 0 };
+  const prefix = 'item-' + (++nextId) + '-';
+  card.querySelectorAll('[data-for]').forEach(label => {
+    const key = label.dataset.for;
+    field(key).id = prefix + key;
+    label.htmlFor = prefix + key;
+  });
+  field('date').value = today;
+  field('date').max = today;
+  configureCategory(item);
+  action('remove').onclick = () => {
+    cancelLookup(item);
+    item.photos.forEach(photo => URL.revokeObjectURL(photo.url));
+    items.splice(items.indexOf(item), 1);
+    item.card.remove();
+    changed();
+  };
+  ['camera', 'picker'].forEach(key => {
+    action(key).onclick = () => field(key).click();
+    field(key).onchange = () => attach(item, field(key));
+  });
+  action('lookup').onclick = () => lookup(item);
+  field('category').onchange = () => {
+    configureCategory(item);
+    if (field('category').value === 'train') scheduleLookup(item);
+    else cancelLookup(item);
+    refresh();
+  };
+  card.addEventListener('input', event => {
+    const key = event.target.dataset.field;
+    if (field('category').value === 'train' && ['home','office','destination','method','direction','date'].includes(key)) {
+      resetLookup(item, key);
+      scheduleLookup(item);
+    }
+    if (['destinationAmount','officeAmount'].includes(key)) item.field(key.replace('Amount','Choice')).value = '';
+    if (key !== 'camera' && key !== 'picker') changed();
+  });
+  ['destination', 'office'].forEach(key => {
+    field(key + 'Choice').onchange = event => {
+      field(key + 'Amount').value = event.target.selectedOptions[0]?.dataset.amount || '';
+      changed();
+    };
+  });
+  items.push(item);
+  el('items').append(fragment);
+  changed();
+  return item;
+}
+
+function cancelLookup(item) {
+  clearTimeout(item.lookupTimer);
+  item.lookupTimer = 0;
+  item.lookup++;
+  item.looking = false;
+  item.action('lookup').disabled = false;
+}
+
+function resetLookup(item, field) {
+  cancelLookup(item);
+  for (const key of ['destination', 'office']) {
+    if (['destination', 'office'].includes(field) && field !== key) continue;
+    item.field(key + 'Amount').value = '';
+    const select = item.field(key + 'Choice');
+    select.replaceChildren();
+    select.hidden = true;
+  }
+  say(item.area('lookup-status'), '');
+}
+
+function hasRoute(fare) {
+  return fare.date && fare.home && (fare.destination || fare.office);
+}
+
+function scheduleLookup(item) {
+  clearTimeout(item.lookupTimer);
+  if (!live || !ready || item.field('category').value !== 'train' || !hasRoute(fareFields(item))) return;
+  item.lookupTimer = setTimeout(() => {
+    item.lookupTimer = 0;
+    lookup(item);
+  }, 600);
+}
+
+function fareFields(item) {
+  return Object.fromEntries(['date','home','office','destination','method','direction','destinationAmount','officeAmount']
+    .map(key => [key, item.field(key).value.trim()]));
+}
+
+function routeUrl(from, to, date, method) {
+  const origin = from.trim();
+  const destination = to.trim();
+  const match = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!origin || !destination || !match) return '';
+  const [, year, month, day] = match;
+  const url = new URL('https://transit.yahoo.co.jp/search/result');
+  url.search = new URLSearchParams({
+    from: origin, to: destination, y: year, m: month, d: day,
+    type: '5', ticket: method === 'IC' ? 'ic' : 'normal', userpass: '0',
+    al: '0', shin: '0', ex: '0', hb: '0', lb: '0', sr: '0',
+  });
+  return url.href;
+}
+
+function updateRouteLinks(item) {
+  if (item.field('category').value !== 'train') return;
+  const fare = fareFields(item);
+  const roundTrip = fare.direction === '往復';
+  let available = false;
+  for (const key of ['destination', 'office']) {
+    for (const leg of ['out', 'back']) {
+      const link = item.card.querySelector('[data-route="' + key + '-' + leg + '"]');
+      const href = leg === 'out' ? routeUrl(fare.home, fare[key], fare.date, fare.method) :
+        roundTrip ? routeUrl(fare[key], fare.home, fare.date, fare.method) : '';
+      link.hidden = !href;
+      if (href) link.href = href;
+      else link.removeAttribute('href');
+      available ||= Boolean(href);
+    }
+  }
+  item.area('route-help').textContent = !available ?
+    '駅を入力すると、登録済みの経路から最安運賃が入ります。' :
+    roundTrip ? 'Yahoo!路線情報で行きと帰りを確認し、それぞれの区間に往復の合計額を入力してください。' :
+      'Yahoo!路線情報で利用した経路と運賃種別を確認し、金額を入力してください。';
+}
+
+async function lookup(item) {
+  const fare = fareFields(item);
+  if (!hasRoute(fare)) {
+    say(item.area('lookup-status'), '利用日、自宅最寄駅、集合駅か事務所駅を入力してください。', true);
+    return;
+  }
+  if (!live || !ready) {
+    say(item.area('lookup-status'), '運賃マスターは台帳連携後に検索できます。Yahoo!路線情報で調べて入力することもできます。');
+    return;
+  }
+  cancelLookup(item);
+  const request = item.lookup;
+  item.looking = true;
+  item.action('lookup').disabled = true;
+  say(item.area('lookup-status'), '登録運賃を検索しています…');
+  refresh();
+  try {
+    const result = await rpc('lookupExpenseFares', fare);
+    if (request !== item.lookup) return;
+    const missing = [];
+    let filled = 0;
+    for (const key of ['destination','office']) {
+      if (!fare[key]) continue;
+      const options = result[key];
+      const select = item.field(key + 'Choice');
+      const input = item.field(key + 'Amount');
+      const previous = select.value;
+      select.replaceChildren(new Option('経路を選択', ''));
+      for (const [index, value] of options.entries()) {
+        const prefix = index === 0 ? '最安 · ' : '';
+        const option = new Option(prefix + value.route + ' ／ ' + currency.format(value.amount) + '円', value.key);
+        option.dataset.amount = value.amount;
+        select.add(option);
+      }
+      select.hidden = options.length === 0;
+      if (!options.length) {
+        if (previous) input.value = '';
+        missing.push(key === 'destination' ? '集合駅' : '事務所駅');
+        continue;
+      }
+      if (previous && options.some(option => option.key === previous)) {
+        select.value = previous;
+      } else if (previous || !input.value.trim()) {
+        select.selectedIndex = 1;
+        input.value = options[0].amount;
+        filled++;
+      }
+    }
+    const messages = [];
+    if (filled) messages.push('登録済みの最安運賃を入力しました。実際に利用した経路が異なる場合は変更できます。');
+    if (missing.length) messages.push(missing.join('・') + 'の運賃は未登録です。Yahoo!路線情報や利用履歴で確認してください。');
+    say(item.area('lookup-status'), messages.join(' ') || '登録運賃が見つかりました。経路を選択できます。');
+    if (filled) changed();
+  } catch {
+    if (request === item.lookup) say(item.area('lookup-status'), '検索できませんでした。運賃は手入力で提出できます。', true);
+  } finally {
+    if (request === item.lookup) {
+      item.looking = false;
+      item.action('lookup').disabled = false;
+      refresh();
+    }
+  }
+}
+
+function encode(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function jpeg(file) {
+  if (file.size > 35 * 1024 * 1024) throw new Error('too large');
+  const url = URL.createObjectURL(file);
+  try {
+    const original = new Image();
+    original.src = url;
+    await original.decode();
+    const canvas = document.createElement('canvas');
+    for (const [limit, quality] of [[2600,.87],[2100,.82],[1600,.8],[1200,.78],[900,.76]]) {
+      const ratio = Math.min(1, limit / Math.max(original.naturalWidth, original.naturalHeight));
+      canvas.width = Math.max(1, Math.round(original.naturalWidth * ratio));
+      canvas.height = Math.max(1, Math.round(original.naturalHeight * ratio));
+      const context = canvas.getContext('2d', { alpha: false });
+      context.fillStyle = '#fff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(original, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+      if (blob && blob.size <= 900 * 1024) return blob;
+    }
+    throw new Error('unsupported image');
+  } finally { URL.revokeObjectURL(url); }
+}
+
+async function attach(item, input) {
+  const files = [...input.files];
+  input.value = '';
+  if (!files.length || item.processing || busy) return;
+  if (files.length > 5 - item.photos.length || files.length > 12 - photoCount()) {
+    say(item.area('photo-status'), '写真は明細ごとに5枚、申請全体で12枚までです。枚数を減らして選択してください。', true);
+    return;
+  }
+  item.processing = true;
+  item.action('camera').disabled = item.action('picker').disabled = true;
+  say(item.area('photo-status'), '写真を確認しています…');
+  refresh();
+  let failures = 0;
+  for (const file of files) {
+    try {
+      const blob = await jpeg(file);
+      const image = await encode(blob);
+      if (!items.includes(item)) return;
+      if (photoCount() >= 12) { failures++; continue; }
+      addPhoto(item, { image, url: URL.createObjectURL(blob), ocr: '' });
+    } catch { failures++; }
+  }
+  item.processing = false;
+  item.action('camera').disabled = item.action('picker').disabled = false;
+  say(item.area('photo-status'), failures ? failures + '枚を追加できませんでした。画像形式と申請全体の枚数を確認してください。' : '', Boolean(failures));
+  changed();
+}
+
+function addPhoto(item, photo) {
+  item.photos.push(photo);
+  const figure = document.createElement('figure');
+  figure.className = 'thumb';
+  const image = document.createElement('img');
+  image.src = photo.url;
+  image.alt = '添付した証憑';
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'btn flat';
+  remove.textContent = '写真を外す';
+  remove.onclick = () => {
+    URL.revokeObjectURL(photo.url);
+    item.photos.splice(item.photos.indexOf(photo), 1);
+    figure.remove();
+    changed();
+  };
+  figure.append(image, remove);
+  if (live) {
+    const read = document.createElement('button');
+    read.type = 'button';
+    read.className = 'btn';
+    read.textContent = '文字を読む';
+    const note = document.createElement('figcaption');
+    note.role = 'status';
+    read.onclick = async () => {
+      read.disabled = true;
+      note.textContent = '読み取り中…';
+      try {
+        const text = await rpc('readExpensePhoto', photo.image);
+        if (!item.photos.includes(photo) || !items.includes(item)) return;
+        photo.ocr = typeof text === 'string' ? text : '';
+        note.textContent = photo.ocr ? '' : '文字を検出できませんでした';
+        if (photo.ocr) {
+          const previous = figure.querySelector('details');
+          if (previous) previous.remove();
+          const details = document.createElement('details');
+          const summary = document.createElement('summary');
+          const output = document.createElement('pre');
+          summary.textContent = '抽出した文字';
+          output.textContent = photo.ocr;
+          details.append(summary, output);
+          figure.append(details);
+        }
+      } catch { note.textContent = '読み取れませんでした'; }
+      finally { read.disabled = false; }
+    };
+    figure.append(read, note);
+  }
+  item.area('images').append(figure);
+}
+
+function setBusy(value) {
+  busy = value;
+  el('name').readOnly = value;
+  el('items').inert = value;
+  refresh();
+}
+
+el('name').addEventListener('input', changed);
+el('add').onclick = () => addItem().field('date').focus();
+el('form').onsubmit = async event => {
+  event.preventDefault();
+  if (el('submit').disabled) return;
+  if (!el('name').value.trim()) {
+    say(el('message'), '氏名を入力してください。', true);
+    el('name').focus();
+    return;
+  }
+  for (const item of items) {
+    if (!item.photos.length) {
+      say(item.area('photo-status'), '写真を1枚以上添付してください。', true);
+      item.action('picker').focus();
+      return;
+    }
+  }
+  if (!live) {
+    say(el('message'), '入力を確認しました。台帳連携後はここから提出できます。');
+    return;
+  }
+  const records = items.map(item => ({
+    category: item.field('category').value, date: item.field('date').value,
+    amount: item.field('amount').value, photos: item.photos.map(({image, ocr}) => ({image, ocr})),
+    fare: { ...fareFields(item), destinationKey: item.field('destinationChoice').value, officeKey: item.field('officeChoice').value },
+  }));
+  id ||= crypto.randomUUID();
+  setBusy(true);
+  say(el('message'), '経費明細と写真を提出しています…');
+  try {
+    const result = await rpc('submitExpense', { id, name: el('name').value.trim(), items: records });
+    el('form').hidden = true;
+    el('success').hidden = false;
+    el('result').textContent = result.count + '件の明細を受け付けました';
+    el('receipt').textContent = '受付番号　' + result.id;
+    el('result').focus();
+  } catch (error) {
+    const message = String(error?.message || '').replace(/^Error:\s*/, '');
+    const userMessage = /を確認してください。$|運賃マスターが変更されました。|枚までです。|申請先が未設定です。/.test(message) ? message : '受付結果を確認できませんでした。内容を保ったまま、もう一度提出してください。';
+    say(el('message'), userMessage, true);
+  } finally { setBusy(false); }
+};
+el('again').onclick = () => {
+  items.forEach(item => {
+    cancelLookup(item);
+    item.photos.forEach(photo => URL.revokeObjectURL(photo.url));
+  });
+  items.length = 0;
+  el('items').replaceChildren();
+  el('form').reset();
+  el('success').hidden = true;
+  el('form').hidden = false;
+  addItem();
+  el('name').focus();
+};
+dateLabel();
+addItem();
+if (live) {
+  rpc('getExpenseSettings').then(settings => {
+    const displayedDate = today;
+    today = settings.today;
+    dateLabel();
+    for (const item of items) {
+      if (item.field('date').value === displayedDate) item.field('date').value = today;
+      item.field('date').max = today;
+    }
+    ready = settings.ready;
+    if (!ready) say(el('notice'), '申請台帳を接続すると提出できます。', true);
+    if (ready) items.forEach(scheduleLookup);
+    refresh();
+  }).catch(() => say(el('notice'), '申請先を確認できませんでした。画面を再読み込みしてください。', true));
+} else {
+  say(el('notice'), '画面プレビュー。ここで入力した内容は保存されません。');
+  el('submit').textContent = '入力内容を確認';
+}
+</script>
+</body>
+</html>
