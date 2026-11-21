@@ -81,7 +81,7 @@ input:not([type=file]),select{color:#17283e;background:#fff;border:1px solid #ad
           <button class="btn" data-action="lookup" type="button">登録運賃を再検索</button>
           <p class="status" data-area="lookup-status" role="status" hidden></p>
         </div>
-        <p class="help" data-area="route-help">駅を入力すると、登録済みの経路から最安運賃が入ります。</p>
+        <p class="help" data-area="route-help">確認済みの運賃があれば自動で入力されます。</p>
         <div class="grid2">
           <div>
             <label data-for="destinationAmount">集合駅までの運賃（円）</label>
@@ -161,7 +161,7 @@ function refresh() {
   el('photo-count').textContent = photoCount() + ' / 12 枚';
   el('total').textContent = count ? currency.format(total) + ' 円' : '—';
   el('add').disabled = busy || items.length >= 8;
-  el('submit').disabled = !ready || busy || items.some(item => item.processing || item.looking || item.lookupTimer);
+  el('submit').disabled = !ready || busy || items.some(item => item.processing);
 }
 
 function changed() {
@@ -306,7 +306,7 @@ function updateRouteLinks(item) {
     }
   }
   item.area('route-help').textContent = !available ?
-    '駅を入力すると、登録済みの経路から最安運賃が入ります。' :
+    '確認済みの運賃があれば自動で入力されます。' :
     roundTrip ? 'Yahoo!路線情報で行きと帰りを確認し、それぞれの区間に往復の合計額を入力してください。' :
       'Yahoo!路線情報で利用した経路と運賃種別を確認し、金額を入力してください。';
 }
@@ -360,8 +360,8 @@ async function lookup(item) {
       }
     }
     const messages = [];
-    if (filled) messages.push('登録済みの最安運賃を入力しました。実際に利用した経路が異なる場合は変更できます。');
-    if (missing.length) messages.push(missing.join('・') + 'の運賃は未登録です。Yahoo!路線情報や利用履歴で確認してください。');
+    if (filled) messages.push('確認済みの運賃を入力しました。実際に支払った金額に合わせて変更できます。');
+    if (missing.length) messages.push(missing.join('・') + 'は運賃を確認できませんでした。金額を手入力して提出できます。');
     say(item.area('lookup-status'), messages.join(' ') || '登録運賃が見つかりました。経路を選択できます。');
     if (filled) changed();
   } catch {
@@ -505,6 +505,15 @@ el('form').onsubmit = async event => {
     return;
   }
   for (const item of items) {
+    if (item.field('category').value === 'train') {
+      for (const [key, label] of [['destinationAmount', '集合駅まで'], ['officeAmount', '事務所まで']]) {
+        const input = item.field(key);
+        if (yen(input.value) !== null) continue;
+        say(item.area('lookup-status'), label + 'の運賃を数字で入力してください。0円の場合は「0」を入力します。', true);
+        input.focus();
+        return;
+      }
+    }
     if (!item.photos.length) {
       say(item.area('photo-status'), '写真を1枚以上添付してください。', true);
       item.action('picker').focus();
@@ -520,6 +529,7 @@ el('form').onsubmit = async event => {
     amount: item.field('amount').value, photos: item.photos.map(({image, ocr}) => ({image, ocr})),
     fare: { ...fareFields(item), destinationKey: item.field('destinationChoice').value, officeKey: item.field('officeChoice').value },
   }));
+  items.forEach(cancelLookup);
   id ||= crypto.randomUUID();
   setBusy(true);
   say(el('message'), '経費明細と写真を提出しています…');

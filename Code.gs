@@ -2,6 +2,7 @@ const EXPENSE = {
   timeZone: 'Asia/Tokyo',
   sheet: '経費明細',
   fares: '運賃マスター',
+  reviewHeaders: ['集合駅運賃の再利用期限', '事務所駅運賃の再利用期限'],
   maxItems: 8,
   photosPerItem: 5,
   maxPhotos: 12,
@@ -37,23 +38,29 @@ function setupExpenseApp() {
       const created = Sheets.Spreadsheets.create({
         properties: { title: '経費申請台帳', timeZone: EXPENSE.timeZone, locale: 'ja_JP' },
         sheets: [
-          { properties: { sheetId: 101, title: EXPENSE.sheet, gridProperties: { frozenRowCount: 1, columnCount: 26 } } },
+          { properties: { sheetId: 101, title: EXPENSE.sheet, gridProperties: { frozenRowCount: 1, columnCount: 28 } } },
           { properties: { sheetId: 102, title: EXPENSE.fares, gridProperties: { frozenRowCount: 1 }} },
         ],
       });
       book = created.spreadsheetId;
       props.setProperty('EXPENSE_BOOK_ID', book);
     }
-    const settings = Sheets.Spreadsheets.get(book, { fields: 'spreadsheetUrl,sheets(properties(sheetId,title))' });
+    const settings = Sheets.Spreadsheets.get(book, { fields: 'spreadsheetUrl,sheets(properties(sheetId,title,gridProperties(columnCount)))' });
     const tabs = Object.fromEntries(settings.sheets.map(({ properties }) => [properties.title, properties.sheetId]));
     if (!(EXPENSE.sheet in tabs) || !(EXPENSE.fares in tabs)) throw new Error('経費明細と運賃マスターのタブが必要です。');
+    const detailTab = settings.sheets.find(({ properties }) => properties.title === EXPENSE.sheet).properties;
+    if (detailTab.gridProperties.columnCount < 28) {
+      Sheets.Spreadsheets.batchUpdate({ requests: [{ appendDimension: {
+        sheetId: detailTab.sheetId, dimension: 'COLUMNS', length: 28 - detailTab.gridProperties.columnCount,
+      } }] }, book);
+    }
     const request = { valueInputOption: 'RAW', data: [
-      { range: "'" + EXPENSE.sheet + "'!A1:Z1", values: [EXPENSE.headers] },
+      { range: "'" + EXPENSE.sheet + "'!A1:AB1", values: [[...EXPENSE.headers, ...EXPENSE.reviewHeaders]] },
       { range: "'" + EXPENSE.fares + "'!A1:H1", values: [EXPENSE.fareHeaders] },
     ] };
     Sheets.Spreadsheets.Values.batchUpdate(request, book);
     const formatting = [
-      { sheetId: tabs[EXPENSE.sheet], widths: [112, 305, 85, 142, 112, 160, 280, 120, 120, 120, 120, 100, 100, 112, 112, 195, 195, 205, 138, 138, 138, 138, 138, 350, 180, 110] },
+      { sheetId: tabs[EXPENSE.sheet], widths: [112, 305, 85, 142, 112, 160, 280, 120, 120, 120, 120, 100, 100, 112, 112, 195, 195, 205, 138, 138, 138, 138, 138, 350, 180, 110, 200, 200] },
       { sheetId: tabs[EXPENSE.fares], widths: [155, 155, 165, 186, 110, 260, 135, 135] },
     ].flatMap(({ sheetId, widths }) => [
       { repeatCell: {
@@ -70,6 +77,11 @@ function setupExpenseApp() {
     formatting.push({ updateDimensionProperties: {
       range: { sheetId: tabs[EXPENSE.sheet], dimension: 'COLUMNS', startIndex: 6, endIndex: 7 },
       properties: { hiddenByUser: true }, fields: 'hiddenByUser',
+    } });
+    formatting.push({ repeatCell: {
+      range: { sheetId: tabs[EXPENSE.sheet], startRowIndex: 1, startColumnIndex: 26, endColumnIndex: 28 },
+      cell: { userEnteredFormat: { numberFormat: { type: 'DATE', pattern: 'yyyy-mm-dd' } } },
+      fields: 'userEnteredFormat.numberFormat',
     } });
     Sheets.Spreadsheets.batchUpdate({ requests: formatting }, book);
     const folderData = Drive.Files.get(folder, { fields: 'webViewLink' });
@@ -127,7 +139,7 @@ function submitExpense(data) {
     if (ids.some((row) => row[0] === data.id)) return { id: data.id, count: ids.filter((row) => row[0] === data.id).length };
     const receivedAt = new Date();
     const today = Utilities.formatDate(receivedAt, EXPENSE.timeZone, 'yyyy-MM-dd');
-    const master = data.items.some((item) => item?.category === 'train' && (item.fare?.destinationKey || item.fare?.officeKey)) ? fareRows_(storage.book) : [];
+    const master = data.items.some((item) => item?.category === 'train' && (item.fare?.destinationKey || item.fare?.officeKey)) ? fareRows_(storage.book) : { master: [], approved: [] };
     const items = data.items.map((item, index) => parseExpense_(item, index, today, master));
     if (items.reduce((total, item) => total + item.photos.length, 0) > EXPENSE.maxPhotos) throw new Error('写真は申請あたり12枚までです。');
     const now = Utilities.formatDate(receivedAt, EXPENSE.timeZone, 'yyyy-MM-dd HH:mm:ss');
@@ -204,9 +216,29 @@ function fareInputs_(input, allowPartial = false) {
 }
 
 function fareRows_(book) {
-  return Sheets.Spreadsheets.Values.get(book, "'" + EXPENSE.fares + "'!A2:H", {
+  const sheet = "'" + EXPENSE.sheet + "'!";
+  const response = Sheets.Spreadsheets.Values.batchGet(book, {
+    ranges: ["'" + EXPENSE.fares + "'!A2:H", sheet + 'E2:R', sheet + 'AA2:AB'],
     valueRenderOption: 'FORMATTED_VALUE',
-  }).values || [];
+  }).valueRanges || [];
+  const [master, expenses, reviews] = response.map(range => range.values || []);
+  const approved = [];
+  for (const [index, deadlines] of (reviews || []).entries()) {
+    const row = expenses?.[index];
+    if (!row || row[1] !== 'キャラバン交通費') continue;
+    const date = dateValue_(row[0]);
+    if (!date || !['IC', '切符'].includes(row[7]) || !['片道', '往復'].includes(row[8])) continue;
+    for (const [leg, to, cost, marker] of [[0, row[6], row[9], '集合駅'], [1, row[5], row[10], '事務所']]) {
+      const end = dateValue_(deadlines[leg]);
+      const amount = String(cost ?? '').trim();
+      const source = String(row[13] ?? '');
+      const handEntered = source.split(' / ').includes(marker + ': 手入力');
+      if (end && end >= date && handEntered && row[4] && to && /^\d{1,7}$/.test(amount)) {
+        approved.push([row[4], to, row[7], row[8], amount, '確認済みの申請履歴', date, end]);
+      }
+    }
+  }
+  return { master: master || [], approved };
 }
 
 function station_(value) {
@@ -216,7 +248,16 @@ function station_(value) {
 function fareOptions_(rows, from, to, trip) {
   const start = station_(from);
   const end = station_(to);
-  if (start === end) return [{ key: 'same-station', amount: 0, route: '同一駅' }];
+  if (start === end) return [{ key: 'same-station', amount: 0, route: '同一駅', source: '同一駅' }];
+  const masterOptions = fareCandidates_(rows.master, start, end, trip);
+  if (masterOptions.length) return masterOptions.slice(0, 20);
+  const approvedOptions = fareCandidates_(rows.approved, start, end, trip, true);
+  // Different confirmed prices may reflect different routes. Require manual input in that case.
+  if (new Set(approvedOptions.map(option => option.amount)).size !== 1) return [];
+  return approvedOptions.slice(0, 1);
+}
+
+function fareCandidates_(rows, start, end, trip, fromHistory = false) {
   const options = new Map();
   for (const [origin, arrival, method, direction, raw, route, first, last] of rows) {
     const validFrom = dateValue_(first);
@@ -225,17 +266,18 @@ function fareOptions_(rows, from, to, trip) {
     if (station_(origin) !== start || station_(arrival) !== end || method !== trip.method || direction !== trip.direction ||
         !validFrom || validFrom > trip.date || (last && (!validThrough || validThrough < trip.date)) || !/^[0-9]{1,7}$/.test(amount)) continue;
     const label = String(route ?? '').trim().slice(0, 180) || '登録経路';
-    const key = Utilities.base64EncodeWebSafe(JSON.stringify([start, end, method, direction, amount, label, validFrom, validThrough]));
-    options.set(key, { key, amount: Number(amount), route: label });
+    const validityKey = fromHistory ? ['history'] : [validFrom, validThrough];
+    const key = Utilities.base64EncodeWebSafe(JSON.stringify([start, end, method, direction, amount, label, ...validityKey]));
+    options.set(key, { key, amount: Number(amount), route: label, source: fromHistory ? '確認済みの申請履歴' : '運賃マスター' });
   }
-  return [...options.values()].sort((a, b) => a.amount - b.amount || a.route.localeCompare(b.route, 'ja')).slice(0, 20);
+  return [...options.values()].sort((a, b) => a.amount - b.amount || a.route.localeCompare(b.route, 'ja'));
 }
 
 function readChosenFare_(rows, from, to, trip, key, amount) {
   if (!key) return { amount: yen_(amount), route: '', source: '手入力' };
   const choice = fareOptions_(rows, from, to, trip).find((option) => option.key === key);
   if (!choice) throw new Error('運賃マスターが変更されました。運賃候補を取り直してください。');
-  return { ...choice, source: choice.key === 'same-station' ? '同一駅' : '運賃マスター' };
+  return choice;
 }
 
 function expenseStorage_() {
